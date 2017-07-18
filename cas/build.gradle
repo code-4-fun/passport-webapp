@@ -1,14 +1,3 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "org.springframework.boot:spring-boot-gradle-plugin:1.5.4.RELEASE"
-    }
-}
-
 apply plugin: 'org.springframework.boot'
 apply from: 'http://dl.bintray.com/scalding/generic/waroverlay.gradle'
 apply from: 'https://raw.githubusercontent.com/apereo/cas/5.1.x/gradle/overrides.gradle'
@@ -46,48 +35,64 @@ bootRun {
 repositories {
     mavenLocal()
     jcenter()
-    mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     maven { url 'https://build.shibboleth.net/nexus/content/repositories/releases/' }
+    maven { url 'https://dl.bintray.com/uniconiam/maven' }
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
-    //compile "org.apereo.cas:cas-server-webapp-tomcat:${project.'cas.version'}@war"
-    compile "org.apereo.cas:cas-server-webapp-tomcat:5.1.1@war"
-    compile "org.apereo.cas:cas-server-support-jdbc:5.1.1"
+    //compile "org.apereo.cas:cas-server-webapp-tomcat:5.1.1@war"
+    compile "org.apereo.cas:cas-server-webapp-tomcat:${project.'cas.version'}@war"
+
+    // dependencies for DUO-Security MFA
+    compile "org.apereo.cas:cas-server-support-duo:${project.'cas.version'}"
+    compile "org.apereo.cas:cas-server-support-trusted-mfa:${project.'cas.version'}"
+
+    // dependency for JDBC Authentication
+    compile "org.apereo.cas:cas-server-support-jdbc:${project.'cas.version'}"
+    compile 'mysql:mysql-connector-java:5.1.6'
 
 }
 
 task copyConfig(type: Copy) {
-    def destDir = "${project.rootDir}/docker/etc/cas/config"
+    def destDir = "${project.rootDir}/docker/webapp/etc/cas/config"
     println "Copying configuration to ${destDir}"
     from "${project.rootDir}/etc/cas/config"
     into "${destDir}"
-}
-
-clean.doFirst {
-    println "Cleaning Docker war directory"
-    delete "${project.rootDir}/docker/war/cas.war"
 }
 
 war {
     dependsOn copyConfig
     baseName 'cas'
     includeWarJars = true
-    destinationDir = new File("${project.rootDir}/docker/war/")
     entryCompression = ZipEntryCompression.STORED
     manifest {
         from manifestFile()
     }
+
+    doLast {
+        def sourceWarPath = project.war.outputs.files.singleFile
+        def dockerWarPath = "${project.rootDir}/docker/webapp/war/"
+        println "Remove existing war file if any - ${dockerWarPath}"
+        delete dockerWarPath
+
+        println "Copying ${sourceWarPath} file into ${dockerWarPath}"
+        copy {
+            from sourceWarPath
+            into dockerWarPath
+        }
+    }
 }
 
 task explodeWar(type: Copy) {
+    def destDir = "${buildDir}/cas"
     group = "build"
     description = "Explode the cas.war"
     from zipTree(project.war.outputs.files.singleFile)
-    into "${buildDir}/cas"
+    into destDir
     doLast {
-        println "CAS web application artifact exploded into [cas/build/cas]"
+        println "CAS web application artifact exploded into [${destDir}]"
     }
 }
 

@@ -5,10 +5,33 @@ buildscript {
     repositories {
         mavenLocal()
         jcenter()
+        maven { url "http://repo.spring.io/libs-snapshot" }
     }
     dependencies {
         classpath "org.bitbucket.b_c:jose4j:0.5.2"
+        classpath "org.springframework.boot:spring-boot-gradle-plugin:${project.'springboot.version'}"
         classpath "io.spring.gradle:dependency-management-plugin:1.0.0.RELEASE"
+    }
+}
+
+plugins {
+    id 'org.springframework.boot' version '1.5.4.RELEASE'
+}
+
+repositories {
+    maven { url "http://repo.spring.io/libs-snapshot" }
+}
+
+dependencies {
+    compile("org.springframework.boot:spring-boot-starter-web:1.5.4.RELEASE") {
+        exclude module: "spring-boot-starter-logging"
+        exclude module: "logback-classic"
+    }
+
+    testCompile "junit:junit:4.12"
+    testCompile("org.springframework.boot:spring-boot-starter-test:1.5.4.RELEASE") {
+        exclude module: "spring-boot-starter-logging"
+        exclude module: "logback-classic"
     }
 }
 
@@ -22,22 +45,20 @@ task wrapper(type: Wrapper, description: "Update the Gradle wrapper") {
 }
 
 task generateKeys {
-  group = 'CAS'
-  description = 'generate keys for CAS. These keys can be added to your cas.properties file'
-  doLast {
-    println 'Generating keys for CAS...'
-    ['cas.tgc.encryptionKey': 256, 'cas.tgc.signingKey': 512, 'cas.webflow.encryption.key': 96, 'cas.webflow.signing.key': 512].each { key, size ->
-        def octetKey = OctJwkGenerator.generateJwk(size)
-        def params = octetKey.toParams(JsonWebKey.OutputControlLevel.INCLUDE_SYMMETRIC)
-        println "${key}=${params.get('k')}"
+    group = 'CAS'
+    description = 'generate keys for CAS. These keys can be added to your cas.properties file'
+    doLast {
+        println 'Generating keys for CAS...'
+        ['cas.tgc.encryptionKey': 256, 'cas.tgc.signingKey': 512, 'cas.webflow.encryption.key': 96, 'cas.webflow.signing.key': 512].each { key, size ->
+            def octetKey = OctJwkGenerator.generateJwk(size)
+            def params = octetKey.toParams(JsonWebKey.OutputControlLevel.INCLUDE_SYMMETRIC)
+            println "${key}=${params.get('k')}"
+        }
     }
-  }
 }
 
-/*
 dependencyManagement {
     imports {
-        mavenBom "org.apereo.cas:cas-server-support-bom:${cas.version}"
+        mavenBom "org.apereo.cas:cas-server-support-bom:${project.'cas.version'}"
     }
 }
-*/

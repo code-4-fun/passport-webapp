@@ -1,0 +1,27 @@
+spring:
+    application:
+        name: passport
+
+server:
+    session:
+        timeout: 300
+        cookie.httpOnly: true
+        trackingModes: COOKIE #TODO check other options as well
+
+cas:
+    authn:
+        throttle:
+            usernameParameter: username
+            startDelay: 10000
+            repeatInterval: 20000
+            appCode: PASSPORT
+            failure:
+                threshold: 100
+                code: AUTHENTICATION_FAILED
+                rangeSeconds: 60
+        policy:
+            all:
+                enabled: true
+
+info:
+  description: Passport Configuration
