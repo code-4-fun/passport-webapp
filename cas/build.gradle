@@ -53,6 +53,9 @@ dependencies {
     compile "org.apereo.cas:cas-server-support-jdbc:${project.'cas.version'}"
     compile 'mysql:mysql-connector-java:5.1.6'
 
+    // to configure service registry
+    //compile "org.apereo.cas:cas-server-support-jpa-service-registry:${project.'cas.version'}"
+    compile "org.apereo.cas:cas-server-support-json-service-registry:${project.'cas.version'}"
 }
 
 task copyConfig(type: Copy) {
