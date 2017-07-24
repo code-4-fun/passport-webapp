@@ -1,10 +1,15 @@
 {
   "@class": "org.apereo.cas.services.RegexRegisteredService",
   /*"serviceId": "^(https|imaps)://([A-Za-z0-9_-]+\.)*rakuten\.com/.*",*/
-  "serviceId":"^https://.+",
+  "serviceId": "^https://.+",
   "name": "HTTPS and IMAPS",
   "id": "0001",
-  "logoutType": "BACK_CHANNEL"
+  "logoutType": "BACK_CHANNEL",
+  "accessStrategy": {
+    "@class": "org.apereo.cas.services.DefaultRegisteredServiceAccessStrategy",
+    "enabled": true,
+    "ssoEnabled": false
+  },
   "multifactorPolicy": {
     "@class": "org.apereo.cas.services.DefaultRegisteredServiceMultifactorPolicy",
     "multifactorAuthenticationProviders": [
